@@ -542,9 +542,21 @@ class AttnCore:
             query, key = apply_rope_fn(query, key, head_dim, **kwargs)
 
         # Compute attention
-        hidden_states = F.scaled_dot_product_attention(
-            query, key, value, attn_mask=attention_mask, dropout_p=0.0, is_causal=False
-        )
+        if value.shape[-1] != query.shape[-1] and value.shape[-1] % query.shape[-1] == 0:
+            # Values wider than the queries (several materials packed together): fused attention kernels need equal
+            # head dims and the fallback materializes the whole score matrix. The attention weights do not depend
+            # on the values, so attending each slice separately and concatenating is exact.
+            hidden_states = torch.cat(
+                [
+                    F.scaled_dot_product_attention(query, key, v, attn_mask=attention_mask, dropout_p=0.0, is_causal=False)
+                    for v in value.split(query.shape[-1], dim=-1)
+                ],
+                dim=-1,
+            )
+        else:
+            hidden_states = F.scaled_dot_product_attention(
+                query, key, value, attn_mask=attention_mask, dropout_p=0.0, is_causal=False
+            )
 
         return hidden_states, residual, input_ndim, shape_info, batch_size, attn.heads, head_dim
 

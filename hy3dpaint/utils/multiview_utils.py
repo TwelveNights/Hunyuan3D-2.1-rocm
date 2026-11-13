@@ -48,6 +48,11 @@ class multiviewDiffusionNet:
         )
 
         pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config, timestep_spacing="trailing")
+        # encode/decode the views one at a time: same result, a fraction of the peak memory (fits 16 GB cards)
+        pipeline.vae.enable_slicing()
+        from .attention_utils import patch_unet_attention
+
+        patch_unet_attention(pipeline.unet)
         pipeline.set_progress_bar_config(disable=True)
         pipeline.eval()
         setattr(pipeline, "view_size", cfg.model.params.get("view_size", 320))
