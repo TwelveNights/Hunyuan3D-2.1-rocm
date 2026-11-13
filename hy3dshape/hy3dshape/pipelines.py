@@ -127,6 +127,30 @@ def instantiate_from_config(config, **kwargs):
     return instance
 
 
+
+_DINOV2_ATTENTION_RENAMES = (
+    (".attention.attention.query.", ".attention.q_proj."),
+    (".attention.attention.key.", ".attention.k_proj."),
+    (".attention.attention.value.", ".attention.v_proj."),
+    (".attention.output.dense.", ".attention.o_proj."),
+)
+
+
+def _match_dinov2_attention_names(state_dict, module):
+    """transformers 5 renamed Dinov2's attention weights; map the checkpoint's names onto whichever the model uses."""
+    expected = module.state_dict().keys()
+    if any(k in expected for k in state_dict) and all(k in expected for k in state_dict):
+        return state_dict
+    renames = _DINOV2_ATTENTION_RENAMES
+    if any(new in k for k in state_dict for _, new in renames):  # checkpoint already new-style, model old-style
+        renames = tuple((new, old) for old, new in renames)
+    out = {}
+    for k, v in state_dict.items():
+        for old, new in renames:
+            k = k.replace(old, new)
+        out[k] = v
+    return out
+
 class Hunyuan3DDiTPipeline:
     model_cpu_offload_seq = "conditioner->model->vae"
     _exclude_from_cpu_offload = []
@@ -173,7 +197,7 @@ class Hunyuan3DDiTPipeline:
         vae.load_state_dict(ckpt['vae'], strict=False)
         conditioner = instantiate_from_config(config['conditioner'])
         if 'conditioner' in ckpt:
-            conditioner.load_state_dict(ckpt['conditioner'])
+            conditioner.load_state_dict(_match_dinov2_attention_names(ckpt['conditioner'], conditioner))
         image_processor = instantiate_from_config(config['image_processor'])
         scheduler = instantiate_from_config(config['scheduler'])
 

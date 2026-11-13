@@ -35,8 +35,8 @@ except:
 
 try:
     from .mesh_inpaint_processor import meshVerticeInpaint  # , meshVerticeColor
-except:
-    print("InPaint Function CAN NOT BE Imported!!!")
+except ImportError:  # C++ extension not built: NumPy implementation
+    from .mesh_inpaint_numpy import meshVerticeInpaint
 
 
 class RenderMode(Enum):
@@ -370,7 +370,12 @@ class MeshRender:
 
         self.raster_mode = raster_mode
         if self.raster_mode == "cr":
-            import custom_rasterizer as cr
+            try:
+                import custom_rasterizer as cr
+
+                cr.rasterize  # the unbuilt source folder also imports, as an empty namespace package
+            except (ImportError, AttributeError):  # CUDA extension not built (AMD ROCm, CPU, ...): PyTorch version
+                from . import rasterizer_torch as cr
 
             self.raster = cr
         else:

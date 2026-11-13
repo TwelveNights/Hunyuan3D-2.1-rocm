@@ -14,7 +14,10 @@
 
 import os
 import cv2
-import bpy
+try:
+    import bpy
+except ImportError:  # Blender's Python module is optional: GLB export falls back to trimesh
+    bpy = None
 import math
 import numpy as np
 from io import StringIO
@@ -264,7 +267,9 @@ def convert_obj_to_glb(
     auto_smooth_angle: float = 60,
     merge_vertices: bool = False,
 ) -> bool:
-    """Convert OBJ file to GLB format using Blender."""
+    """Convert OBJ file to GLB format using Blender (trimesh when bpy is not installed)."""
+    if bpy is None:
+        return _convert_obj_to_glb_trimesh(obj_path, glb_path)
     try:
         _setup_blender_scene()
         _clear_scene_objects()
@@ -282,3 +287,37 @@ def convert_obj_to_glb(
         return True
     except Exception:
         return False
+
+
+def _convert_obj_to_glb_trimesh(obj_path: str, glb_path: str) -> bool:
+    """OBJ (+ the maps save_obj_mesh writes next to it) -> GLB with a glTF PBR material, without Blender."""
+    import trimesh
+    from PIL import Image
+
+    base_path = os.path.splitext(obj_path)[0]
+    mesh = trimesh.load(obj_path, process=False, force="mesh")
+    uv = mesh.visual.uv
+
+    def _image(suffix):
+        path = f"{base_path}{suffix}.jpg"
+        return Image.open(path) if os.path.exists(path) else None
+
+    base_color = _image("")
+    metallic, roughness, normal = _image("_metallic"), _image("_roughness"), _image("_normal")
+    metallic_roughness = None
+    if metallic is not None or roughness is not None:
+        size = (metallic or roughness).size
+        m = np.asarray(metallic.convert("L"), np.uint8) if metallic is not None else np.zeros(size[::-1], np.uint8)
+        r = np.asarray(roughness.convert("L"), np.uint8) if roughness is not None else np.full(size[::-1], 255, np.uint8)
+        # glTF packs roughness in G and metalness in B
+        metallic_roughness = Image.fromarray(np.stack([np.zeros_like(r), r, m], axis=-1))
+    material = trimesh.visual.material.PBRMaterial(
+        baseColorTexture=base_color,
+        metallicRoughnessTexture=metallic_roughness,
+        normalTexture=normal,
+        metallicFactor=1.0 if metallic is not None else 0.0,
+        roughnessFactor=1.0,
+    )
+    mesh.visual = trimesh.visual.TextureVisuals(uv=uv, material=material)
+    mesh.export(glb_path)
+    return True
