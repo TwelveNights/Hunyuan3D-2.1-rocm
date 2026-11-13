@@ -34,6 +34,9 @@ First runs are much slower while MIOpen tunes convolutions; set `MIOPEN_FIND_MOD
 search. SageAttention: [SageAttention-rocm](https://github.com/TwelveNights/SageAttention-rocm), enable it with
 `from rocm_attention import use_sage_attention; use_sage_attention()` (repo root) before loading the pipelines.
 
+Radeon RX 7800 XT 16 GB, Windows 11 (ComfyUI's Windows portable Python: torch 2.9.1 + ROCm 7.2.1, triton-windows,
+SageAttention-rocm), same settings: shape 39.9 s (10.2 GiB peak), paint 96.2 s (12.9 GiB peak).
+
 ## Install
 
 Install a ROCm build of PyTorch first, then (without replacing it):
@@ -42,7 +45,9 @@ Install a ROCm build of PyTorch first, then (without replacing it):
 pip install diffusers transformers accelerate einops huggingface_hub opencv-python-headless trimesh omegaconf scikit-image pymeshlab xatlas pygltflib rembg onnxruntime timm torchdiffeq pytorch-lightning realesrgan basicsr
 ```
 
-Download `RealESRGAN_x4plus.pth` to `hy3dpaint/ckpt/` and run `demo.py`. If the Hugging Face cache is not writable,
+Download `RealESRGAN_x4plus.pth` to `hy3dpaint/ckpt/` and run `demo.py`. Embedded Pythons (ComfyUI portable)
+ignore the script's folder and `PYTHONPATH`; add the repo root to `sys.path` so `torchvision_fix` (needed by
+basicsr with current torchvision) is found. If the Hugging Face cache is not writable,
 set `HF_MODULES_CACHE` (diffusers copies the paint pipeline's code there).
 
 License: the Tencent Hunyuan 3D community license applies to the models and code (it excludes the EU, the UK and
