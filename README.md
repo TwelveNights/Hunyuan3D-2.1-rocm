@@ -19,6 +19,8 @@ PyTorch with nothing to compile, and texturing fits a 16 GB card.
 
 ## Quick start
 
+In ComfyUI, use the [ComfyUI-3D-rocm](https://github.com/TwelveNights/ComfyUI-3D-rocm) node pack instead: the Hunyuan3D-2.1 painter as nodes, installed from ComfyUI Manager.
+
 Install a ROCm build of PyTorch first (Linux: `pip install torch torchvision --index-url
 https://download.pytorch.org/whl/rocm7.0`; Windows: AMD's ROCm wheels), then:
 
@@ -36,6 +38,7 @@ Upstream's documentation: [README_upstream.md](README_upstream.md).
 
 ## Related
 
+- [ComfyUI-3D-rocm](https://github.com/TwelveNights/ComfyUI-3D-rocm): TripoSG and Hunyuan3D-2.1 Paint as ComfyUI nodes on AMD
 - [TripoSG-rocm](https://github.com/TwelveNights/TripoSG-rocm): TripoSG image-to-3D on AMD
 - [nunchaku-rocm](https://github.com/TwelveNights/nunchaku-rocm): 4-bit FLUX, Qwen-Image, Z-Image and SDXL on AMD
 - [SageAttention-rocm](https://github.com/TwelveNights/SageAttention-rocm): 8-bit attention for AMD GPUs
