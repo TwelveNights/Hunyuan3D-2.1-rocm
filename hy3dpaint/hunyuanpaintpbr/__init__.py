@@ -13,7 +13,10 @@
 # by Tencent in accordance with TENCENT HUNYUAN COMMUNITY LICENSE AGREEMENT.
 
 from .pipeline import HunyuanPaintPipeline
-from .unet.model import HunyuanPaint
+try:
+    from .unet.model import HunyuanPaint  # training wrapper; needs pytorch_lightning, inference does not
+except ImportError:
+    HunyuanPaint = None
 from .unet.modules import (
     Dino_v2,
     Basic2p5DTransformerBlock,
