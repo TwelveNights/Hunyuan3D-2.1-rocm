@@ -42,12 +42,13 @@ SageAttention-rocm), same settings: shape 39.9 s (10.2 GiB peak), paint 96.2 s (
 Install a ROCm build of PyTorch first, then (without replacing it):
 
 ```
-pip install diffusers transformers accelerate einops huggingface_hub opencv-python-headless trimesh omegaconf scikit-image pymeshlab xatlas pygltflib rembg onnxruntime timm torchdiffeq pytorch-lightning realesrgan basicsr
+pip install diffusers transformers accelerate einops huggingface_hub opencv-python-headless trimesh omegaconf scikit-image pymeshlab xatlas pygltflib rembg onnxruntime timm torchdiffeq pytorch-lightning spandrel
 ```
 
 Download `RealESRGAN_x4plus.pth` to `hy3dpaint/ckpt/` and run `demo.py`. Embedded Pythons (ComfyUI portable)
-ignore the script's folder and `PYTHONPATH`; add the repo root to `sys.path` so `torchvision_fix` (needed by
-basicsr with current torchvision) is found. If the Hugging Face cache is not writable,
+ignore the script's folder and `PYTHONPATH`; add the repo root and `hy3dshape` / `hy3dpaint` to `sys.path`
+(`demo_rocm.py` does). Real-ESRGAN runs through spandrel instead of realesrgan / basicsr (basicsr 1.4.2 does not
+build on Python 3.13+ and needs a torchvision shim); the output is bit-identical. If the Hugging Face cache is not writable,
 set `HF_MODULES_CACHE` (diffusers copies the paint pipeline's code there).
 
 License: the Tencent Hunyuan 3D community license applies to the models and code (it excludes the EU, the UK and

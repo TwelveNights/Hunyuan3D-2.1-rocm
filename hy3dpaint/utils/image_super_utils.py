@@ -13,29 +13,25 @@
 # by Tencent in accordance with TENCENT HUNYUAN COMMUNITY LICENSE AGREEMENT.
 
 import numpy as np
+import torch
 from PIL import Image
 
 
 class imageSuperNet:
+    """RealESRGAN x4, loaded with spandrel instead of realesrgan/basicsr (basicsr no longer builds from source on
+    recent Python and breaks on recent torchvision). Same network and weights, and the same steps as
+    RealESRGANer.enhance with tile=0, pre_pad=0 and half=True, including its BGR channel order."""
+
     def __init__(self, config) -> None:
-        from realesrgan import RealESRGANer
-        from basicsr.archs.rrdbnet_arch import RRDBNet
+        from spandrel import ModelLoader
 
-        model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
-        upsampler = RealESRGANer(
-            scale=4,
-            model_path=config.realesrgan_ckpt_path,
-            dni_weight=None,
-            model=model,
-            tile=0,
-            tile_pad=10,
-            pre_pad=0,
-            half=True,
-            gpu_id=None,
-        )
-        self.upsampler = upsampler
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = ModelLoader().load_from_file(config.realesrgan_ckpt_path).model.eval().half().to(self.device)
 
+    @torch.no_grad()
     def __call__(self, image):
-        output, _ = self.upsampler.enhance(np.array(image))
-        output = Image.fromarray(output)
-        return output
+        img = np.asarray(image.convert("RGB"), dtype=np.float32) / 255.0
+        x = torch.from_numpy(np.ascontiguousarray(img[:, :, ::-1].transpose(2, 0, 1)))[None]
+        out = self.model(x.to(self.device).half()).float().clamp_(0, 1)[0].cpu().numpy()
+        out = out[::-1].transpose(1, 2, 0)
+        return Image.fromarray((out * 255.0).round().astype(np.uint8))

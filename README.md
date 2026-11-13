@@ -26,7 +26,7 @@ https://download.pytorch.org/whl/rocm7.0`; Windows: AMD's ROCm wheels), then:
 
 ```bash
 git clone -b rocm https://github.com/TwelveNights/Hunyuan3D-2.1-rocm.git && cd Hunyuan3D-2.1-rocm
-pip install diffusers transformers accelerate einops huggingface_hub opencv-python-headless trimesh omegaconf scikit-image pymeshlab xatlas pygltflib rembg onnxruntime timm torchdiffeq pytorch-lightning realesrgan basicsr
+pip install diffusers transformers accelerate einops huggingface_hub opencv-python-headless trimesh omegaconf scikit-image pymeshlab xatlas pygltflib rembg onnxruntime timm torchdiffeq pytorch-lightning spandrel
 python demo_rocm.py assets/demo.png output     # -> output/demo_textured.glb
 ```
 
