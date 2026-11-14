@@ -30,8 +30,8 @@ pip install diffusers transformers accelerate einops huggingface_hub opencv-pyth
 python demo_rocm.py assets/demo.png output     # -> output/demo_textured.glb
 ```
 
-`demo_rocm.py` uses the fast settings (FlashVDM, 30 steps, SageAttention when installed); `--no-texture` for shape
-only. The first run of each stage is slow while MIOpen tunes convolutions; later runs are fast.
+`demo_rocm.py` uses the fast settings (FlashVDM, 30 steps, and SageAttention when installed: `pip install
+sageattention-rocm`); `--no-texture` for shape only. The first run of each stage is slow while MIOpen tunes convolutions; later runs are fast.
 
 **[ROCM.md](ROCM.md)**: what changed and how it was verified, measurements, Windows notes.
 Upstream's documentation: [README_upstream.md](README_upstream.md).

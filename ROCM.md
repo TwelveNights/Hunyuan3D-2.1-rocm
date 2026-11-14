@@ -31,7 +31,7 @@ Radeon PRO W7900 (gfx1100), chair image, warm:
 | Paint (6 views, 512) | 150 s, 21.3 GiB | **46 s**, 10 GiB | the attention fix + VAE slicing (64 s), + SageAttention |
 
 First runs are much slower while MIOpen tunes convolutions; set `MIOPEN_FIND_MODE=FAST` to skip the exhaustive
-search. SageAttention: [SageAttention-rocm](https://github.com/TwelveNights/SageAttention-rocm), enable it with
+search. SageAttention: `pip install sageattention-rocm` ([SageAttention-rocm](https://github.com/TwelveNights/SageAttention-rocm)), enable it with
 `from rocm_attention import use_sage_attention; use_sage_attention()` (repo root) before loading the pipelines.
 
 Radeon RX 7800 XT 16 GB, Windows 11 (ComfyUI's Windows portable Python: torch 2.9.1 + ROCm 7.2.1, triton-windows,
